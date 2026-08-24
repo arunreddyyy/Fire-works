@@ -216,6 +216,124 @@ function explode(x, y, forcedType) {
             }
             break;
         }
+        case 'Heart': {
+            const n = 100;
+            for(let i = 0;i < n; i++ ){
+                const t = (Math.PI * 2 * i) / n;
+                const hx = 16 * Math.pow(Math.sin(t), 3);
+                const hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                const speed = 0.35;
+                particles.push(new particle(x, y, {
+                    vx: hx * speed, vy: hy * speed,
+                    hue: 345 + rand(-8, 8), size: rand(1.6, 2.3),
+                    decay: rand(0.010, 0.014), gravity: 0.03, drag: 0.03
+                }));
+            }
+            break;
+        }
+        case 'Double Ring': {
+            [4.5, 7.2]. forEach((speed, ringIdx) => {
+                const n = 70;
+                for (let i = 0; i < n; i++) {
+                    const angle = (Math.PI * 2 * i) / n + (ringIdx * 0.15);
+                    particles.push(new particle(x, y, {
+                        vx : Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                        hue: hue + ringIdx * 40 + rand(-8, 8), size: rand(1.4, 2),
+                        decay: rand(0.011, 0.015), gravity: 0.045, drag: 0.983
+                    }));
+                }
+            });
+            break;
+        }
     }
 }
+
+
+class Rocket {
+    constructor(targetX, targetY, forcedType) {
+        this.x = targetX + rand(-30, 30);
+        this.y = H + 10;
+        this.targetY = targetY;
+        const dist = this.y - targetY;
+        this.vy = -rand(9, 12);
+        this.vx = (targetX - this.x) / (dist / Math.abs(this.vy)) * 0.06;
+        this.hue = rand(0, 360);
+        this.trailPts = [];
+        this.forcedType = forcedType;
+        this.dead = false; 
+    }
+    update() {
+        this.trailPts.push({ x: this.x, y: this.y });
+        if(this.trailPts.length > 8) this.trailPts.shift();
+        this.vy += 0.03;
+        this.x += this.vx;
+        this.y += this.vy;
+        if(this.vy >= -1 || this.y <= this.targetY){
+            explode(this.x, this.y, this.forcedType);
+            this.dead = true;
+        }
+    }
+
+draw() {
+    ctx.beginPath();
+    if(this.trailPts.length > 1){
+        ctx.moveTo(this.trailPts[0].x, this.trailPts[0].y);
+        for(let i = 1; i < this.trailPts.length; i++) ctx.lineTo(this.trailPts[i].x, this.trailPts[i],y);
+    }
+    ctx.strokeStyle = `hsla(${this.hue}, 90%, 70%, 0.8)`;
+    ctx.lineWidth = 1.6;
+    ctxstroke();
+    ctx.beginPath();
+    ctx.arc(this.x , this.y, 1.8, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    }
+}
+function lanuch (x, y, forcedType){
+    rockets.push(new Rocket(x, Math.max(y, 60), forcedType));
+}
+canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    lanuch(e.clientX - rect.left, e.clientY - rect.top);
+});
+
+
+function ambientLanuch() {
+    if (Math.random() < 0.5) {
+        lanuch(rand(W * 0.15, W * 0.05), rand(H * 0.15, H * 0.55));
+    }
+    setTimeout(ambientLaunch, rand(2800, 5200));
+}
+setTimeout(ambientLaunch, 2000);
+
+
+function drawSky() {
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#05080f');
+    grad.addColorStop(1, '#0d1224');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    stars.forEach(s => {
+        s.tw += 0.02 * s.speed;
+        const a = 0.4+ Math.sin(s.tw) * 0.4;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle =  `rgba(232,236,247,${a})`;
+        ctx.fill();
+    });
+}
+
+function frame() {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(5,7,15,0.22)';
+    ctx.fillRect(0, 0, W, H);
+
+    stars.forEach(s => {
+        s.tw += 0.02 * s.speed;
+        const a = 0.4 + Math.sin(s.tw) * 0.4;
+        ctx.begin
+    })
+}
+
 })
