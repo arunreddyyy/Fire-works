@@ -29,7 +29,7 @@ canvas {
 .label .sub {
     display: block; margin-top: 4px;
     font-size: 10px; letter-spacing: 0.08em;
-    opacity: 0.7; text-transform: none; font: italic; 
+    opacity: 0.7; text-transform: none; font-style: italic; 
 }
 .kind-tag {
     position: absolute; top: 22px; right: 26px;

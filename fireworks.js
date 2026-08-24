@@ -1,5 +1,5 @@
 (function () {
-    const canvas = document.grtElementById('sky');
+    const canvas = document.getElementById('sky');
     const ctx = canvas.getContext('2d');
     const kindTag =document.getElementById('kindTag');
 
@@ -7,7 +7,7 @@
 
     function resize() {
         DPR = Math.min(window.devicePixelRatio || 1, 2);
-        W = window,innerWidth; H = window.innerHeight;
+        W = window.innerWidth; H = window.innerHeight;
         canvas.width = W * DPR; canvas.height = H * DPR;
         ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
         buildStars();
@@ -15,13 +15,13 @@
 
     function buildStars() {
         stars = [];
-        const count = Math.floor(W * H) / 9000;
+        const count = Math.floor((W * H) / 9000);
         for (let i = 0; i < count; i++){
             stars.push({
                 x: Math.random() * W,
                 y: Math.random() * H * 0.75,
                 r: Math.random() * 1.2 + 0.2,
-                tw: Math.random() * Math.pi * 2,
+                tw: Math.random() * Math.PI * 2,
                 speed: 0.3 + Math.random() * 0.6
             });
         }
@@ -34,7 +34,7 @@
             audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
             const bufferSize = audioCtx.sampleRate * 0.4;
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData;
+            const data = buffer.getChannelData(0);
             for (let i = 0; i < bufferSize; i++){
                 data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
             }
@@ -45,14 +45,14 @@
             filter.frequency.value = 700;
             const gain = audioCtx.createGain();
             gain.gain.value = volume;
-            noise.connect(filter).connect(gain).connect(audioCtx.ddestination);
+            noise.connect(filter).connect(gain).connect(audioCtx.destination);
             noise.start();
         } catch (e) {}
     }
 
 
     function rand(min,max){ return Math.random() * (max - min) + min; }
-    function pick(arr) { return arr[Math.random() * arr.length]; }
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)];}
 
     const HUE_SETS = [
         [350, 10], [200, 190], [45, 55], [280, 260], [140,160], [320,300], [0,360]
@@ -73,7 +73,7 @@
             this.life = 1;
             this.decay = opts.decay || rand(0.010, 0.02);
             this.gravity = opts.gravity != null ? opts.gravity : 0.045;
-            this.drag = opts != null ? opts.drag : 0.988;
+            this.drag = opts.drag != null ? opts.drag : 0.988;
             this.trail = !!opts.trail;
             this.trailPts = [];
             this.spark = !!opts.spark;
@@ -83,7 +83,7 @@
     update() {
         if(this.trail) {
             this.trailPts.push({ x: this.x, y: this.y });
-            if (this.trail.trailPts.length > 6) this.trail.shift();
+            if (this.trailPts.length > 6) this.trailPts.shift();
         }
         this.vx *= this.drag;
         this.vy *= this.drag;
@@ -98,10 +98,10 @@
         }
     }
     draw() {
-        const alpha = Math.max(this.trail, 0);
-        if (this.trail && thisPts.length > 1) {
+        const alpha = Math.max(this.life, 0);
+        if (this.trail && this.trailPts.length > 1) {
             ctx.beginPath();
-            ctx.moveTo(this.trailPts[i].y);
+            ctx.moveTo(this.trailPts[0].x, this.trailPts[0].y);
             for (let i = 1; i < this.trailPts.length; i++) ctx.lineTo(this.trailPts[i].x, this.trailPts[i].y);
             ctx.strokeStyle = `hsla(${this.hue}, ${this.sat}%, ${this.light}%, ${alpha * 0.35})`;
             ctx.lineWidth = this.size * 0.6;
@@ -115,7 +115,7 @@
     }
 }
 
-function spawnCracleSparks(x, y, hue){
+function spawnCrackleSparks(x, y, hue){
     const n = 8 + Math.floor(Math.random() * 6);
     for( let i = 0; i < n; i++){
         const angle = Math.random() * Math.PI * 2;
@@ -163,7 +163,7 @@ function explode(x, y, forcedType) {
             }
             break;
         }
-        case 'chrysanthemum': {
+        case 'Chrysanthemum': {
             const n = 140;
             for (let i = 0; i < n; i++) {
                 const angle = (Math.PI * 2 * i) / n + rand(-0.05, 0.05);
@@ -182,7 +182,7 @@ function explode(x, y, forcedType) {
                 const angle = (Math.PI * 2 * i) / n + rand(-0.05, 0.05);
                 const speed = rand(2, 5.5);
                 particles.push(new particle(x, y, {
-                    vx: Math.cos(angle) * speed, vy: sin(angle) * speed,
+                    vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
                     hue: 45 + rand(-10, 15), light: 65, size: rand(1, 1.8),trail: true,
                     decay: rand(0.006, 0.009), gravity: 0.09, drag: 0.99
                 }));
@@ -226,13 +226,13 @@ function explode(x, y, forcedType) {
                 particles.push(new particle(x, y, {
                     vx: hx * speed, vy: hy * speed,
                     hue: 345 + rand(-8, 8), size: rand(1.6, 2.3),
-                    decay: rand(0.010, 0.014), gravity: 0.03, drag: 0.03
+                    decay: rand(0.010, 0.014), gravity: 0.03, drag: 0.99
                 }));
             }
             break;
         }
         case 'Double Ring': {
-            [4.5, 7.2]. forEach((speed, ringIdx) => {
+            [4.5, 7.2].forEach((speed, ringIdx) => {
                 const n = 70;
                 for (let i = 0; i < n; i++) {
                     const angle = (Math.PI * 2 * i) / n + (ringIdx * 0.15);
@@ -278,29 +278,29 @@ draw() {
     ctx.beginPath();
     if(this.trailPts.length > 1){
         ctx.moveTo(this.trailPts[0].x, this.trailPts[0].y);
-        for(let i = 1; i < this.trailPts.length; i++) ctx.lineTo(this.trailPts[i].x, this.trailPts[i],y);
+        for(let i = 1; i < this.trailPts.length; i++) ctx.lineTo(this.trailPts[i].x, this.trailPts[i].y);
     }
     ctx.strokeStyle = `hsla(${this.hue}, 90%, 70%, 0.8)`;
     ctx.lineWidth = 1.6;
-    ctxstroke();
+    ctx.stroke();
     ctx.beginPath();
     ctx.arc(this.x , this.y, 1.8, 0, Math.PI * 2);
     ctx.fillStyle = '#fff';
     ctx.fill();
     }
 }
-function lanuch (x, y, forcedType){
+function launch (x, y, forcedType){
     rockets.push(new Rocket(x, Math.max(y, 60), forcedType));
 }
 canvas.addEventListener('click', (e) => {
     const rect = canvas.getBoundingClientRect();
-    lanuch(e.clientX - rect.left, e.clientY - rect.top);
+    launch(e.clientX - rect.left, e.clientY - rect.top);
 });
 
 
-function ambientLanuch() {
+function ambientLaunch() {
     if (Math.random() < 0.5) {
-        lanuch(rand(W * 0.15, W * 0.05), rand(H * 0.15, H * 0.55));
+        launch(rand(W * 0.15, W * 0.85), rand(H * 0.15, H * 0.55));
     }
     setTimeout(ambientLaunch, rand(2800, 5200));
 }
@@ -332,8 +332,35 @@ function frame() {
     stars.forEach(s => {
         s.tw += 0.02 * s.speed;
         const a = 0.4 + Math.sin(s.tw) * 0.4;
-        ctx.begin
-    })
+        ctx.beginPath();
+        ctx.arc(s.x, s.y,s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(232,236,247,${a})`;
+        ctx.fill();
+    });
+
+    ctx.globalCompositeOperation = 'lighter';
+
+    for( let i = rockets.length - 1; i >= 0; i--) {
+        rockets[i].update();
+        rockets[i].draw();
+        if (rockets[i].dead) rockets.splice(i, 1);
+    }
+
+    for(let i = particles.length - 1; i>= 0; i--){
+        particles[i].update();
+        particles[i].draw();
+        if(particles[i].life <= 0) particles.splice(i, 1);
+
+    }
+    requestAnimationFrame(frame);
+
 }
 
-})
+window.addEventListener('resize', resize);
+resize();
+drawSky();
+requestAnimationFrame(frame);
+
+setInterval(() => {}, 1000)
+
+})();
